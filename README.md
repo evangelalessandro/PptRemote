@@ -5,6 +5,9 @@ via Wi-Fi: scegli la finestra della presentazione, premi **F5**, poi **avanti / 
 
 Il PC accetta un telefono solo dopo che hai digitato sul telefono il **codice a 6 cifre** che
 compare sullo schermo del computer.
+| La finestra sul PC | Il codice di collegamento |
+|---|---|
+| ![Finestra PC](docs/pc-finestra.png) | ![Codice sul PC](docs/pc-codice.png) |
 
 
 | Il PC (server + indirizzo) | Il codice di collegamento | Il telecomando | Palco (anteprima, contatore, timer) | Ricerca file |
