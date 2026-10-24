@@ -1,0 +1,211 @@
+﻿<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0b1016">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PptRemote">
+<title>PptRemote</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="topbar">
+    <div class="brand">
+      <span id="dot" class="dot"></span>
+      <span id="pcname">PptRemote</span>
+    </div>
+    <button id="btn-menu" class="iconbtn" aria-label="Menu">⋯</button>
+  </header>
+
+  <!-- 1. invio richiesta / attesa -->
+  <section id="pairing" class="screen hidden">
+    <div class="pulse"><span></span></div>
+    <h1>Collegamento al PC</h1>
+    <p>Sto chiedendo al computer il codice di collegamento.</p>
+    <p class="muted" id="pairhint">Un attimo…</p>
+    <button id="btn-again" class="ghost">Riprova</button>
+  </section>
+
+  <!-- 2. inserimento codice -->
+  <section id="code" class="screen hidden">
+    <h1>Codice di collegamento</h1>
+    <p>Il PC sta mostrando un codice a 6 cifre.<br>Digitalo qui.</p>
+    <div class="code-display" id="code-display">· · · &nbsp; · · ·</div>
+    <p class="code-error" id="code-error"></p>
+    <div class="code-grid" id="code-grid">
+      <button data-digit="1">1</button><button data-digit="2">2</button><button data-digit="3">3</button>
+      <button data-digit="4">4</button><button data-digit="5">5</button><button data-digit="6">6</button>
+      <button data-digit="7">7</button><button data-digit="8">8</button><button data-digit="9">9</button>
+      <button id="code-clear">C</button><button data-digit="0">0</button><button id="code-back">⌫</button>
+    </div>
+    <button id="code-cancel" class="ghost">Annulla</button>
+  </section>
+
+  <!-- 3. rifiutato / scaduto -->
+  <section id="denied" class="screen hidden">
+    <div class="bigicon">✕</div>
+    <h1 id="denied-title">Collegamento non riuscito</h1>
+    <p id="denied-text">Il PC non ha autorizzato questo telefono.</p>
+    <button id="btn-retry" class="primary">Nuovo codice</button>
+  </section>
+
+  <!-- 3. app -->
+  <main id="main" class="hidden">
+    <section class="card now">
+      <div class="now-left">
+        <div class="now-label" id="now-label">Nessuna presentazione</div>
+        <div class="now-sub" id="now-sub">Apri un file sul PC, poi tocca Aggiorna.</div>
+      </div>
+      <button id="btn-close-file" class="close-pill" title="Chiude il file selezionato">✕ Chiudi</button>
+      <button id="btn-refresh" class="iconbtn" aria-label="Aggiorna">⟳</button>
+    </section>
+
+    <!-- palco: anteprima, contatore, timer -->
+    <section id="stage" class="card stage hidden">
+      <div class="stage-top">
+        <div class="slide-badge">
+          <span id="slide-current">–</span><span class="sep">/</span><span id="slide-total">–</span>
+          <small>slide</small>
+        </div>
+        <button id="btn-laser" class="laser-btn">🔴 Laser</button>
+        <div class="timer">
+          <span id="timer-value">00:00</span>
+          <button id="timer-toggle" class="timer-btn" aria-label="Avvia o pausa">▶</button>
+          <button id="timer-reset" class="timer-btn" aria-label="Azzera">↺</button>
+        </div>
+      </div>
+
+      <div id="preview-wrap" class="preview-wrap">
+        <img id="preview" class="preview" alt="Anteprima della presentazione">
+        <div id="pad-hint" class="pad-hint">
+          <div>
+            <div class="pad-hint-big">👆 Tocca qui</div>
+            <div class="pad-hint-small">il puntatore del PC va dove tocchi</div>
+          </div>
+        </div>
+        <div id="laser-dot" class="laser-dot"></div>
+      </div>
+      <div id="preview-hint" class="muted">Anteprima quando la presentazione è avviata.</div>
+    </section>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="open">Aperte</button>
+      <button class="tab" data-tab="files">File</button>
+      <button class="tab" data-tab="screen">Schermo</button>
+    </div>
+
+    <section id="tab-open">
+      <section class="card howto hidden" id="howto">
+        <div class="howto-title">Come si usa</div>
+        <ol class="howto-list">
+          <li>Tocca una presentazione nell'elenco qui sotto.</li>
+          <li>Premi <b>F5 · Avvia</b> in basso.</li>
+          <li>Premi <b>🔴 Laser</b> e poi <b>tocca l'anteprima</b> dove vuoi indicare.</li>
+        </ol>
+        <button id="howto-close" class="ghost small">Ho capito, non mostrare più</button>
+      </section>
+
+      <div id="windows" class="list"></div>
+      <div id="empty" class="empty hidden">
+        Nessuna presentazione aperta sul PC.<br>
+        <span class="muted">Apri un .pptx / .odp, oppure cercalo nella scheda File.</span>
+      </div>
+      <div class="hint muted">
+        Tocca una finestra per portarla in primo piano. I comandi qui sotto
+        agiscono su quella selezionata.
+      </div>
+    </section>
+
+    <section id="tab-files" class="hidden">
+      <div class="searchrow">
+        <input id="search" type="search" placeholder="Cerca una presentazione…"
+               autocomplete="off" autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="folderhint muted" id="folder-hint"></div>
+      <div id="files" class="list"></div>
+      <div id="files-empty" class="empty hidden">
+        Nessun file trovato.<br>
+        <span class="muted">La cartella di ricerca si imposta dalla finestra del PC.</span>
+      </div>
+    </section>
+
+    <section id="tab-screen" class="hidden">
+      <div class="screen-tools">
+        <span class="muted" id="screen-age">Specchio del PC…</span>
+        <div class="monitors" id="monitors"></div>
+        <button id="screen-refresh" class="timer-btn" aria-label="Aggiorna ora">⟳</button>
+        <button id="screen-zoom" class="timer-btn" aria-label="Ingrandisci">⤢</button>
+      </div>
+      <div id="screen-wrap" class="preview-wrap screen-wrap">
+        <img id="screen" class="preview" alt="Schermo del PC">
+        <div id="screen-pad-hint" class="pad-hint">
+          <div>
+            <div class="pad-hint-big">Tocca per spostare il mouse</div>
+            <div class="pad-hint-small">qui vedi lo schermo del PC</div>
+          </div>
+        </div>
+        <div id="screen-dot" class="laser-dot"></div>
+      </div>
+      <div class="hint muted">
+        Tocca un punto dell'immagine: il mouse del PC va lì. Con <b>🔴 Laser</b> attivo
+        (scheda Aperte) il pallino segue il dito.
+      </div>
+    </section>
+  </main>
+
+  <!-- 4. telecomando -->
+  <footer id="dock" class="dock hidden">
+    <div class="target" id="target">Nessuna finestra selezionata</div>
+    <div class="pad-main">
+      <button class="key big" data-action="prev" aria-label="Slide indietro">◀</button>
+      <button class="key big" data-action="next" aria-label="Slide avanti">▶</button>
+    </div>
+    <div class="pad-2">
+      <button class="key primary" data-action="present">F5 · Avvia</button>
+      <button class="key danger" data-action="stop">Esc · Ferma</button>
+    </div>
+    <div class="pad-3">
+      <button class="key small" data-action="present_current">Shift+F5</button>
+      <button class="key small" data-action="black">Nero · B</button>
+      <button class="key small" id="btn-goto">Slide n°</button>
+    </div>
+  </footer>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<div id="sheet" class="sheet hidden">
+  <div class="sheet-body">
+    <button class="sheet-item" id="sheet-refresh">Aggiorna</button>
+    <button class="sheet-item" id="sheet-fullscreen">Schermo intero</button>
+    <button class="sheet-item danger-text" id="sheet-unlink">Disconnetti questo telefono</button>
+    <button class="sheet-item" id="sheet-close">Chiudi</button>
+    <div class="sheet-note muted" id="sheet-note"></div>
+  </div>
+</div>
+
+<div id="gotobox" class="sheet hidden">
+  <div class="sheet-body">
+    <div class="goto-display" id="goto-display">—</div>
+    <div class="goto-grid">
+      <button data-digit="1">1</button><button data-digit="2">2</button><button data-digit="3">3</button>
+      <button data-digit="4">4</button><button data-digit="5">5</button><button data-digit="6">6</button>
+      <button data-digit="7">7</button><button data-digit="8">8</button><button data-digit="9">9</button>
+      <button id="goto-clear">C</button><button data-digit="0">0</button><button id="goto-go">Vai</button>
+    </div>
+    <button class="sheet-item" id="goto-close">Annulla</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
