@@ -5,6 +5,7 @@
 ![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D6?logo=windows&logoColor=white)
 ![Test](https://img.shields.io/badge/test-35%20passing-brightgreen)
+[![Patreon](https://img.shields.io/badge/Patreon-sostieni%20il%20progetto-F96854?logo=patreon&logoColor=white)](https://www.patreon.com/c/alessandroevangelisti)
 
 > **Scarica subito**: [PptRemote-1.0.0.zip](https://github.com/evangelalessandro/PptRemote/releases/latest) — scompatta e lancia `Avvia PptRemote.bat`. Nessuna dipendenza obbligatoria (Python 3.9+ con tkinter).
 
@@ -226,3 +227,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\test-e2e.ps1
 I test avviano un server isolato sulla porta 8799 con dati in `%TEMP%`, verificano
 codice giusto/sbagliato/troppi tentativi, elenco finestre, F5, avanti, indietro,
 vai a slide, schermo nero, Esc e la gestione degli errori.
+---
+
+## Sostieni il progetto
+
+PptRemote è gratis e senza pubblicità. Se ti è utile e vuoi che continui a crescere
+(nuove funzioni, supporto, documentazione), puoi sostenermi su Patreon:
+
+**[patreon.com/c/alessandroevangelisti](https://www.patreon.com/c/alessandroevangelisti)**
+
+Ogni contributo aiuta a dedicare tempo alla manutenzione. Grazie!

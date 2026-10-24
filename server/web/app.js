@@ -956,6 +956,7 @@
     show(sheet);
   });
   document.getElementById('sheet-close').addEventListener('click', () => hide(sheet));
+  document.getElementById('sheet-patreon').addEventListener('click', () => hide(sheet));
   sheet.addEventListener('click', (ev) => { if (ev.target === sheet) hide(sheet); });
 
   document.getElementById('sheet-refresh').addEventListener('click', () => {
