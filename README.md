@@ -1,13 +1,13 @@
-﻿# PptRemote — telecomando presentazioni: Android → PC Windows
+# PptRemote — telecomando presentazioni: Android → PC Windows
 
 [![Release](https://img.shields.io/github/v/release/evangelalessandro/PptRemote?color=brightgreen)](https://github.com/evangelalessandro/PptRemote/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/downloads/)
 ![Windows](https://img.shields.io/badge/platform-Windows-0078D6?logo=windows&logoColor=white)
 ![Test](https://img.shields.io/badge/test-35%20passing-brightgreen)
 [![Patreon](https://img.shields.io/badge/Patreon-sostieni%20il%20progetto-F96854?logo=patreon&logoColor=white)](https://www.patreon.com/c/alessandroevangelisti)
 
-> **Scarica subito**: [PptRemote-1.0.0.zip](https://github.com/evangelalessandro/PptRemote/releases/latest) — scompatta e lancia `Avvia PptRemote.bat`. Nessuna dipendenza obbligatoria (Python 3.9+ con tkinter).
+> **Scarica subito**: [PptRemote-1.0.0.zip](https://github.com/evangelalessandro/PptRemote/releases/latest) — scompatta e lancia `Avvia PptRemote.bat`. Nessuna dipendenza obbligatoria: serve solo [Python 3.9+ con tkinter](https://www.python.org/downloads/windows/).
 
 Comandi le presentazioni **già aperte** sul PC (PowerPoint, LibreOffice Impress, WPS) dal telefono,
 via Wi-Fi: scegli la finestra della presentazione, premi **F5**, poi **avanti / indietro**, **Esc**.
@@ -26,12 +26,16 @@ compare sullo schermo del computer.
 
 ## 1. Requisiti
 
-- Windows 10/11 con **Python 3.9+** installato (da python.org, con tkinter incluso).
-  Verifica: apri il prompt e scrivi `python --version`.
+- Windows 10/11 con **[Python 3.9+](https://www.python.org/downloads/windows/)** installato.
+  L'installer ufficiale include **tkinter** (lascia spuntata l'opzione *tcl/tk and IDLE*).
+  Verifica: apri il prompt e scrivi `python --version` e `python -c "import tkinter"`.
 - **PowerPoint** o **LibreOffice Impress** sul PC, con la presentazione già aperta.
 - Telefono **Android** (o iPhone) collegato alla **stessa rete Wi-Fi** del PC.
 
 Nessuna libreria da installare: il server usa solo la libreria standard di Python.
+Facoltativi: [`qrcode`](https://pypi.org/project/qrcode/) (QR nella finestra del PC) e
+[`Pillow`](https://pypi.org/project/Pillow/) (anteprime JPEG, ~30 volte più leggere) —
+`python -m pip install --user qrcode Pillow`.
 
 ## 2. Avvio sul PC
 
