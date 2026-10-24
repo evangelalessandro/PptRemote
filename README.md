@@ -73,7 +73,7 @@ Cose che possono bloccare il collegamento:
 Il PC deve avere la regola firewall per la porta 8787: la finestra mostra
 *"Firewall: regola per la porta 8787 presente"* in verde quando è tutto a posto.
 
-## 4. Uso
+## 5. Uso
 
 La pagina del telefono ha tre schede, e si cambiano anche **scorrendo col dito**
 (swipe a sinistra/destra):
@@ -157,7 +157,7 @@ che Windows e PowerPoint usano di default. Se il proiettore non è quello giusto
 
 Per far riconoscere il proiettore a Windows: `Win + P` → **Estendi**.
 
-## 5. Come funziona (in breve)
+## 6. Come funziona (in breve)
 
 ```
 Telefono (pagina web)  ──HTTP──▶  ppremote.py (PC)
@@ -180,7 +180,7 @@ Se l'app ha una presentazione a schermo intero, i tasti vanno a quella.
   la richiesta viene bloccata.
 - I telefoni autorizzati e i log stanno in `%APPDATA%\PptRemote\`.
 
-## 6. Problemi comuni
+## 7. Problemi comuni
 
 | Sintomo | Soluzione |
 |---|---|
@@ -193,7 +193,7 @@ Se l'app ha una presentazione a schermo intero, i tasti vanno a quella.
 | La ricerca non trova un file che c'è | controlla la riga *Cartella file* sul PC: se mostra `nessuna presentazione` premi **Scegli…**; la ricerca guarda solo lì (e non in tutto il disco) |
 | La porta 8787 è occupata | il server usa automaticamente la successiva libera e lo mostra in finestra |
 
-## 7. Struttura del progetto
+## 8. Struttura del progetto
 
 ```
 Avvia PptRemote.bat        avvio rapido
@@ -207,7 +207,7 @@ tools/test-e2e.ps1         test automatici completi
 tools/shot.js              screenshot di sviluppo (Chrome DevTools Protocol)
 ```
 
-## 8. Test automatici
+## 9. Test automatici
 
 Con il PC libero (i test aprono PowerPoint e vanno a schermo intero per qualche secondo):
 
