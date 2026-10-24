@@ -1,5 +1,13 @@
 ﻿# PptRemote — telecomando presentazioni: Android → PC Windows
 
+[![Release](https://img.shields.io/github/v/release/evangelalessandro/PptRemote?color=brightgreen)](https://github.com/evangelalessandro/PptRemote/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white)
+![Windows](https://img.shields.io/badge/platform-Windows-0078D6?logo=windows&logoColor=white)
+![Test](https://img.shields.io/badge/test-35%20passing-brightgreen)
+
+> **Scarica subito**: [PptRemote-1.0.0.zip](https://github.com/evangelalessandro/PptRemote/releases/latest) — scompatta e lancia `Avvia PptRemote.bat`. Nessuna dipendenza obbligatoria (Python 3.9+ con tkinter).
+
 Comandi le presentazioni **già aperte** sul PC (PowerPoint, LibreOffice Impress, WPS) dal telefono,
 via Wi-Fi: scegli la finestra della presentazione, premi **F5**, poi **avanti / indietro**, **Esc**.
 
