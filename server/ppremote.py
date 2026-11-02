@@ -1429,26 +1429,8 @@ class PcWindow:
                 justify="left",
             ).grid(row=4, column=0, columnspan=2, sticky="w", pady=(10, 0))
 
-        qr = self._qr_widget(inner, self.url)
-        if qr is not None:
-            qr.grid(row=1, column=2, rowspan=2, sticky="ne", padx=(12, 0))
-            tk.Label(
-                inner,
-                text="Inquadra il QR con la fotocamera del telefono",
-                bg=CARD,
-                fg=MUTED,
-                font=("Segoe UI", 8),
-            ).grid(row=6, column=0, columnspan=2, sticky="w", pady=(8, 0))
-        else:
-            tk.Label(
-                inner,
-                text="QR non disponibile: python -m pip install --user qrcode",
-                bg=CARD,
-                fg="#e3b341",
-                font=("Segoe UI", 8),
-                wraplength=470,
-                justify="left",
-            ).grid(row=6, column=0, columnspan=2, sticky="w", pady=(8, 0))
+        self._card_inner = inner
+        self._render_qr()
 
         self.fw_label = tk.Label(
             inner, text="", bg=CARD, fg=MUTED, font=("Segoe UI", 8),
@@ -1531,6 +1513,82 @@ class PcWindow:
                         fill="#0b1016", outline="",
                     )
         return canvas
+
+    def _render_qr(self) -> None:
+        """Disegna il QR accanto all'indirizzo, o il pulsante per installare il componente."""
+        inner = getattr(self, "_card_inner", None)
+        if inner is None:
+            return
+        for child in getattr(self, "_qr_children", []):
+            try:
+                child.destroy()
+            except Exception:  # pragma: no cover
+                pass
+        self._qr_children = []
+
+        qr = self._qr_widget(inner, self.url)
+        if qr is not None:
+            qr.grid(row=1, column=2, rowspan=2, sticky="ne", padx=(12, 0))
+            caption = tk.Label(
+                inner, text="Inquadra il QR con la fotocamera del telefono",
+                bg=CARD, fg=MUTED, font=("Segoe UI", 8),
+            )
+            caption.grid(row=6, column=0, columnspan=2, sticky="w", pady=(8, 0))
+            self._qr_children = [qr, caption]
+            return
+
+        box = tk.Frame(inner, bg=CARD)
+        box.grid(row=1, column=2, rowspan=2, sticky="ne", padx=(12, 0))
+        tk.Label(
+            box, text="QR non disponibile", bg=CARD, fg="#e3b341",
+            font=("Segoe UI Semibold", 9),
+        ).pack(anchor="w")
+        tk.Label(
+            box, text="manca il componente qrcode", bg=CARD, fg=MUTED,
+            font=("Segoe UI", 8),
+        ).pack(anchor="w", pady=(0, 6))
+        self._button(box, "Installa componente QR", self.install_qrcode).pack(anchor="w")
+        caption = tk.Label(
+            inner,
+            text="Premi «Installa componente QR»: si apre una finestrella con l'installazione, poi il QR compare qui",
+            bg=CARD, fg=MUTED, font=("Segoe UI", 8), wraplength=470, justify="left",
+        )
+        caption.grid(row=6, column=0, columnspan=2, sticky="w", pady=(8, 0))
+        self._qr_children = [box, caption]
+
+    def install_qrcode(self) -> None:
+        """Lancia l'installazione del pacchetto qrcode (pip) in una finestra visibile."""
+        try:
+            subprocess.Popen(
+                [sys.executable, "-m", "pip", "install", "--user", "qrcode"],
+                creationflags=getattr(subprocess, "CREATE_NEW_CONSOLE", 0),
+            )
+        except OSError as exc:
+            self._toast(f"Non riesco ad avviare pip: {exc}")
+            return
+        self._toast("Installazione avviata: segui la finestra nera")
+        threading.Thread(target=self._wait_qrcode, daemon=True, name="qr-install").start()
+
+    def _wait_qrcode(self) -> None:
+        import importlib
+
+        for _ in range(90):
+            time.sleep(2)
+            importlib.invalidate_caches()
+            try:
+                import qrcode  # noqa: F401
+            except ImportError:
+                continue
+            self.root.after(0, self._qr_ok)
+            return
+        self.root.after(
+            0,
+            lambda: self._toast("Installazione non riuscita: prova con python -m pip install --user qrcode"),
+        )
+
+    def _qr_ok(self) -> None:
+        self._render_qr()
+        self._toast("Componente QR installato")
 
     def _update_firewall_label(self) -> None:
         if not hasattr(self, "fw_label"):
