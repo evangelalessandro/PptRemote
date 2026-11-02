@@ -20,13 +20,16 @@ import os
 import queue
 import re
 import secrets
+import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import unicodedata
 import urllib.parse
+import urllib.request
 import io
 import uuid
 import zipfile
@@ -36,7 +39,7 @@ from pathlib import Path
 
 import winapi
 
-VERSION = "1.0"
+VERSION = "1.0.6"
 APP_NAME = "PptRemote"
 DEFAULT_PORT = 8787
 DISCOVERY_PORT = 8788
@@ -63,6 +66,71 @@ PRES_EXTS = (".ppt", ".pptx", ".pps", ".ppsx", ".pptm", ".odp", ".pdf", ".key")
 SHOW_CLASSES = {"screenclass"}
 
 LOG = logging.getLogger(APP_NAME)
+
+GITHUB_REPO = "evangelalessandro/PptRemote"
+
+
+# --------------------------------------------------------------------------- #
+# aggiornamento automatico dal repository GitHub
+# --------------------------------------------------------------------------- #
+def _version_tuple(text: str) -> tuple:
+    numbers = re.findall(r"\d+", str(text or ""))
+    return tuple(int(n) for n in numbers[:3]) or (0,)
+
+
+def latest_release() -> dict | None:
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+    try:
+        request = urllib.request.Request(
+            url,
+            headers={
+                "User-Agent": f"{APP_NAME}/{VERSION}",
+                "Accept": "application/vnd.github+json",
+            },
+        )
+        with urllib.request.urlopen(request, timeout=20) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except (OSError, ValueError) as exc:
+        LOG.warning("controllo aggiornamenti fallito: %s", exc)
+        return None
+
+
+def apply_update(zip_path: Path, app_root: Path) -> str:
+    """Scompatta il pacchetto scaricato sopra l'installazione corrente."""
+    staging = Path(tempfile.mkdtemp(prefix="ppremote-upd-"))
+    try:
+        with zipfile.ZipFile(zip_path) as archive:
+            archive.extractall(staging)
+        if not (staging / "server" / "ppremote.py").is_file():
+            return "il pacchetto scaricato non è valido"
+        shutil.copytree(staging / "server", app_root / "server", dirs_exist_ok=True)
+        for name in ("Avvia PptRemote.bat", "Consenti nel firewall.bat", "README.md", "LICENSE"):
+            source = staging / name
+            if source.is_file():
+                shutil.copy2(source, app_root / name)
+        for junk in (app_root / "server" / "web").glob("_*.html"):
+            junk.unlink(missing_ok=True)
+        return "ok"
+    except (OSError, zipfile.BadZipFile) as exc:
+        LOG.exception("aggiornamento non riuscito")
+        return str(exc)
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
+
+
+def download_update(url: str, folder: Path) -> Path | None:
+    try:
+        request = urllib.request.Request(
+            url, headers={"User-Agent": f"{APP_NAME}/{VERSION}"}
+        )
+        with urllib.request.urlopen(request, timeout=120) as response:
+            data = response.read()
+    except OSError as exc:
+        LOG.warning("download aggiornamento fallito: %s", exc)
+        return None
+    target = folder / "update.zip"
+    target.write_bytes(data)
+    return target
 
 
 # --------------------------------------------------------------------------- #
@@ -1332,7 +1400,7 @@ def start_discovery() -> None:
 # finestra sul PC
 # --------------------------------------------------------------------------- #
 import tkinter as tk  # noqa: E402  (import dopo per non rallentare l'avvio in console)
-from tkinter import ttk  # noqa: E402
+from tkinter import messagebox, ttk  # noqa: E402
 
 BG = "#0f141a"
 CARD = "#182027"
@@ -1377,7 +1445,7 @@ class PcWindow:
         ).pack(anchor="w", pady=(18, 0), **pad)
         tk.Label(
             self.root,
-            text="PowerPoint / LibreOffice / WPS — F5, Esc, avanti e indietro",
+            text=f"PowerPoint / LibreOffice / WPS — F5, Esc, avanti e indietro · v{VERSION}",
             bg=BG,
             fg=MUTED,
             font=("Segoe UI", 10),
@@ -1422,6 +1490,7 @@ class PcWindow:
             side="left", padx=(8, 0)
         )
         self._button(buttons, "Apri firewall", self.firewall).pack(side="left", padx=(8, 0))
+        self._button(buttons, "Aggiorna", self.check_update).pack(side="left", padx=(8, 0))
 
         if len(self.addresses) > 1:
             tk.Label(
@@ -1877,6 +1946,63 @@ class PcWindow:
         if self.dialog is not None and self.dialog.winfo_exists():
             self.dialog.destroy()
         self.dialog = None
+
+    # -- aggiornamento automatico --
+    def check_update(self, silent: bool = False) -> None:
+        self._toast("Controllo aggiornamenti…")
+
+        def work() -> None:
+            release = latest_release()
+            self.root.after(0, lambda: self._update_found(release, silent))
+
+        threading.Thread(target=work, daemon=True, name="update-check").start()
+
+    def _update_found(self, release: dict | None, silent: bool) -> None:
+        if not release:
+            if not silent:
+                messagebox.showinfo(APP_NAME, "Non riesco a controllare gli aggiornamenti (serve la connessione a internet).")
+            return
+        tag = str(release.get("tag_name") or "")
+        if _version_tuple(tag) <= _version_tuple(VERSION):
+            if not silent:
+                messagebox.showinfo(APP_NAME, f"Sei già aggiornato: versione {VERSION}.")
+            return
+        if not messagebox.askyesno(
+            APP_NAME,
+            f"C'è la versione {tag} (tu hai {VERSION}).\n\nScaricarla e installarla adesso?",
+        ):
+            return
+        asset = next(
+            (a for a in release.get("assets", []) if str(a.get("name", "")).endswith(".zip")),
+            None,
+        )
+        if not asset:
+            messagebox.showwarning(APP_NAME, "La release non contiene un pacchetto .zip.")
+            return
+        self._toast("Scarico l'aggiornamento…")
+        url = str(asset.get("browser_download_url") or "")
+
+        def work() -> None:
+            folder = Path(tempfile.mkdtemp(prefix="ppremote-dl-"))
+            zip_path = download_update(url, folder)
+            if zip_path is None:
+                message = "download non riuscito"
+            else:
+                message = apply_update(zip_path, Path(__file__).resolve().parent.parent)
+            shutil.rmtree(folder, ignore_errors=True)
+            self.root.after(0, lambda: self._update_done(message))
+
+        threading.Thread(target=work, daemon=True, name="update-apply").start()
+
+    def _update_done(self, message: str) -> None:
+        if message != "ok":
+            messagebox.showerror(APP_NAME, f"Aggiornamento non riuscito:\n{message}")
+            return
+        messagebox.showinfo(
+            APP_NAME,
+            "Aggiornamento installato.\n\nChiudi e riapri «Avvia PptRemote.bat» per usare la nuova versione.",
+        )
+        self.quit()
 
     def quit(self) -> None:
         self.root.destroy()
