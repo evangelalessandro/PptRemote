@@ -1268,6 +1268,7 @@ def firewall_open(port: int) -> bool:
         result = subprocess.run(
             ["netsh", "advfirewall", "firewall", "show", "rule", f"name={APP_NAME} {port}"],
             capture_output=True, text=True, errors="replace", timeout=15,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
     except (OSError, subprocess.SubprocessError):
         return False
@@ -1411,14 +1412,24 @@ class PcWindow:
 
         qr = self._qr_widget(inner, self.url)
         if qr is not None:
-            qr.grid(row=5, column=0, columnspan=2, pady=(12, 0))
+            qr.grid(row=1, column=2, rowspan=2, sticky="ne", padx=(12, 0))
             tk.Label(
                 inner,
-                text="Inquadra con la fotocamera del telefono per aprire la pagina",
+                text="Inquadra il QR con la fotocamera del telefono",
                 bg=CARD,
                 fg=MUTED,
                 font=("Segoe UI", 8),
-            ).grid(row=6, column=0, columnspan=2, sticky="w", pady=(6, 0))
+            ).grid(row=6, column=0, columnspan=2, sticky="w", pady=(8, 0))
+        else:
+            tk.Label(
+                inner,
+                text="QR non disponibile: python -m pip install --user qrcode",
+                bg=CARD,
+                fg="#e3b341",
+                font=("Segoe UI", 8),
+                wraplength=470,
+                justify="left",
+            ).grid(row=6, column=0, columnspan=2, sticky="w", pady=(8, 0))
 
         self.fw_label = tk.Label(
             inner, text="", bg=CARD, fg=MUTED, font=("Segoe UI", 8),
@@ -1488,7 +1499,7 @@ class PcWindow:
         except Exception:  # pragma: no cover - libreria presente ma diversa
             LOG.debug("QR non generato", exc_info=True)
             return None
-        module = 4
+        module = 3
         side = len(matrix) * module
         canvas = tk.Canvas(
             parent, width=side, height=side, bg="white", highlightthickness=0
@@ -1626,9 +1637,9 @@ class PcWindow:
     # -- lista dispositivi --
     def _refresh_lists(self) -> None:
         self._ticks = getattr(self, "_ticks", 0) + 1
-        if self._ticks % 10 == 1:
+        if self._ticks % 40 == 1:
             self._update_firewall_label()
-        if self._ticks % 10 == 2:
+        if self._ticks % 40 == 2:
             self._refresh_folder_count()
         for child in self.devices_box.winfo_children():
             child.destroy()
