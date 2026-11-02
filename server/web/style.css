@@ -530,15 +530,17 @@ main {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 4px;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 13px;
-  padding: 4px;
+  /* fascia sempre in fondo: colore dedicato, diverso dalle card */
+  background: linear-gradient(180deg, #1c2b45, #101a2a);
+  border: 1px solid #2f4a72;
+  border-radius: 14px;
+  padding: 5px;
+  box-shadow: 0 -3px 14px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .05);
 }
 .tab {
   border: 0;
   background: transparent;
-  color: var(--muted);
+  color: #9fb4d0;
   font-family: inherit;
   font-size: 12px;
   font-weight: 650;
@@ -546,7 +548,12 @@ main {
   border-radius: 10px;
   cursor: pointer;
 }
-.tab.active { background: var(--card-2); color: var(--fg); }
+.tab.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, .45);
+}
+.tab:not(.active):active { background: rgba(255, 255, 255, .06); }
 
 #tab-palco, #tab-open, #tab-files, #tab-screen { display: flex; flex-direction: column; gap: 10px; }
 
