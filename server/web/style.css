@@ -257,8 +257,7 @@ main {
 
 /* ---------- telecomando ---------- */
 .dock {
-  position: sticky;
-  bottom: 0;
+  position: relative;
   padding: 10px 14px calc(12px + env(safe-area-inset-bottom));
   background: linear-gradient(180deg, rgba(11, 16, 22, .75), #0b1016 28%);
   border-top: 1px solid rgba(255, 255, 255, .05);
@@ -526,6 +525,8 @@ main {
 
 /* ---------- schede Aperte / File ---------- */
 .tabs {
+  flex: 0 0 auto;
+  margin: 0 14px calc(10px + env(safe-area-inset-bottom));
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 4px;
