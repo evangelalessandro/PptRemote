@@ -1350,8 +1350,13 @@ class PcWindow:
         self.url = f"http://{self.addresses[0]}:{port}"
         self.root = tk.Tk()
         self.root.title(f"{APP_NAME} — telecomando presentazioni")
-        self.root.geometry("560x760")
-        self.root.minsize(520, 620)
+        try:
+            dpi = ctypes.windll.user32.GetDpiForWindow(self.root.winfo_id()) or 96
+            self._scale = max(1.0, float(dpi) / 96.0)
+        except Exception:  # pragma: no cover
+            self._scale = 1.0
+        self.root.geometry(f"{int(560 * self._scale)}x{int(790 * self._scale)}")
+        self.root.minsize(int(520 * self._scale), int(640 * self._scale))
         self.root.configure(bg=BG)
         self.dialog: tk.Toplevel | None = None
         self.waiting: list[dict] = []
@@ -1500,7 +1505,7 @@ class PcWindow:
         except Exception:  # pragma: no cover - libreria presente ma diversa
             LOG.debug("QR non generato", exc_info=True)
             return None
-        module = 3
+        module = max(3, int(3 * getattr(self, "_scale", 1.0)))
         side = len(matrix) * module
         canvas = tk.Canvas(
             parent, width=side, height=side, bg="white", highlightthickness=0
@@ -1914,6 +1919,23 @@ def setup_logging() -> None:
     LOG.setLevel(logging.INFO)
 
 
+def enable_dpi_awareness() -> None:
+    """Dichiara a Windows che l'app capisce lo scaling: coordinate 1:1 con i pixel reali.
+
+    Senza questo, su schermi al 125/150% le catture risultano zoomate e tagliate
+    e il puntatore del mouse cade spostato.
+    """
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)  # per-monitor
+        return
+    except Exception:
+        pass
+    try:
+        ctypes.windll.user32.SetProcessDPIAware()
+    except Exception:
+        pass
+
+
 def main(argv: list[str] | None = None) -> int:
     global SERVER_PORT, TEST_MODE
     parser = argparse.ArgumentParser(
@@ -1927,6 +1949,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
     TEST_MODE = bool(args.test_mode)
+    enable_dpi_awareness()
     setup_logging()
     if TEST_MODE:
         LOG.warning("TEST MODE: il codice di pairing è leggibile da /api/pair/code")
