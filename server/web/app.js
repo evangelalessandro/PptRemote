@@ -45,6 +45,8 @@
     timerValue: document.getElementById('timer-value'),
     timerToggle: document.getElementById('timer-toggle'),
     timerReset: document.getElementById('timer-reset'),
+    tabPalco: document.getElementById('tab-palco'),
+    palcoEmpty: document.getElementById('palco-empty'),
     tabOpen: document.getElementById('tab-open'),
     tabScreen: document.getElementById('tab-screen'),
     screen: document.getElementById('screen'),
@@ -75,7 +77,8 @@
   let pairId = '';
   let codeInput = '';
   let codeBusy = false;
-  let activeTab = 'open';
+  let activeTab = 'palco';
+  let hadShow = false;
   let previewTimer = 0;
   let timerStart = 0;
   let timerElapsed = 0;
@@ -419,6 +422,11 @@
     document.querySelectorAll('#dock .key').forEach((b) => { b.disabled = noWin; });
 
     renderStage(wins);
+
+    // appena parte una proiezione, porta il telefono sulla scheda Palco
+    if (showWin && !hadShow && activeTab !== 'palco') setTab('palco');
+    hadShow = !!showWin;
+    if (started) el.dock.classList.toggle('hidden', activeTab === 'palco' && !!showWin);
   }
 
   /* ------------------------------------------------------- palco / stage */
@@ -428,11 +436,13 @@
     const showWin = wins.find((w) => w.kind === 'show');
     if (!showWin) {
       el.stage.classList.add('hidden');
+      el.palcoEmpty.classList.remove('hidden');
       stopPreview();
       setLaser(false, true);
       return;
     }
     el.stage.classList.remove('hidden');
+    el.palcoEmpty.classList.add('hidden');
     const slide = showWin.slide || {};
     el.slideCurrent.textContent = slide.current > 0 ? slide.current : '–';
     el.slideTotal.textContent = slide.total > 0 ? slide.total : '–';
@@ -535,7 +545,7 @@
     stopPreview();
     previewHwnd = hwnd;
     const tick = () => {
-      if (document.hidden || activeTab !== 'open') return;
+      if (document.hidden) return;
       const url = '/api/preview?token=' + encodeURIComponent(token)
         + '&hwnd=' + hwnd + '&t=' + Date.now();
       const probe = new Image();
@@ -607,15 +617,18 @@
     document.querySelectorAll('.tab').forEach((tab) => {
       tab.classList.toggle('active', tab.dataset.tab === name);
     });
+    el.tabPalco.classList.toggle('hidden', name !== 'palco');
     el.tabOpen.classList.toggle('hidden', name !== 'open');
     el.tabFiles.classList.toggle('hidden', name !== 'files');
     el.tabScreen.classList.toggle('hidden', name !== 'screen');
     if (name === 'screen') startScreen();
-    else {
-      stopScreen();
-      if (name === 'open') renderStage((state && state.windows) || []);
-      else if (name === 'files' && !filesLoaded) loadFiles('');
+    else stopScreen();
+    if (name === 'palco') {
+      renderStage((state && state.windows) || []);
+    } else {
+      stopPreview();
     }
+    if (name === 'files' && !filesLoaded) loadFiles('');
   }
 
   /* ------------------------------------------------- specchio dello schermo */
@@ -741,7 +754,7 @@
     const elapsed = Date.now() - swipeStart.t;
     swipeStart = null;
     if (elapsed > 900 || Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-    const order = ['open', 'files', 'screen'];
+    const order = ['palco', 'open', 'files', 'screen'];
     const idx = order.indexOf(activeTab);
     const nextIdx = dx < 0 ? Math.min(idx + 1, order.length - 1) : Math.max(idx - 1, 0);
     if (nextIdx !== idx) {
@@ -898,6 +911,13 @@
     localStorage.setItem(HWND_KEY, String(hwnd));
     render();
     act('focus');
+  });
+
+  el.tabPalco.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('[data-action]');
+    if (!btn) return;
+    ev.preventDefault();
+    act(btn.dataset.action);
   });
 
   el.dock.addEventListener('click', (ev) => {

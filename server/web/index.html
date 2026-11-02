@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="it">
 <head>
 <meta charset="utf-8">
@@ -69,40 +69,54 @@
     </section>
 
     <!-- palco: anteprima, contatore, timer -->
-    <section id="stage" class="card stage hidden">
-      <div class="stage-top">
-        <div class="slide-badge">
-          <span id="slide-current">–</span><span class="sep">/</span><span id="slide-total">–</span>
-          <small>slide</small>
-        </div>
-        <button id="btn-laser" class="laser-btn">🔴 Laser</button>
-        <div class="timer">
-          <span id="timer-value">00:00</span>
-          <button id="timer-toggle" class="timer-btn" aria-label="Avvia o pausa">▶</button>
-          <button id="timer-reset" class="timer-btn" aria-label="Azzera">↺</button>
-        </div>
-      </div>
-
-      <div id="preview-wrap" class="preview-wrap">
-        <img id="preview" class="preview" alt="Anteprima della presentazione">
-        <div id="pad-hint" class="pad-hint">
-          <div>
-            <div class="pad-hint-big">👆 Tocca qui</div>
-            <div class="pad-hint-small">il puntatore del PC va dove tocchi</div>
+    <section id="tab-palco">
+      <section id="stage" class="card stage hidden">
+        <div class="stage-top">
+          <div class="slide-badge">
+            <span id="slide-current">–</span><span class="sep">/</span><span id="slide-total">–</span>
+            <small>slide</small>
+          </div>
+          <button id="btn-laser" class="laser-btn">🔴 Laser</button>
+          <div class="timer">
+            <span id="timer-value">00:00</span>
+            <button id="timer-toggle" class="timer-btn" aria-label="Avvia o pausa">▶</button>
+            <button id="timer-reset" class="timer-btn" aria-label="Azzera">↺</button>
           </div>
         </div>
-        <div id="laser-dot" class="laser-dot"></div>
+
+        <div id="preview-wrap" class="preview-wrap">
+          <img id="preview" class="preview" alt="Anteprima della presentazione">
+          <div id="pad-hint" class="pad-hint">
+            <div>
+              <div class="pad-hint-big">👆 Tocca qui</div>
+              <div class="pad-hint-small">il puntatore del PC va dove tocchi</div>
+            </div>
+          </div>
+          <div id="laser-dot" class="laser-dot"></div>
+        </div>
+        <div id="preview-hint" class="muted">Anteprima quando la presentazione è avviata.</div>
+
+        <div class="stage-actions">
+          <button class="key big" data-action="prev" aria-label="Slide indietro">◀</button>
+          <button class="key big" data-action="next" aria-label="Slide avanti">▶</button>
+        </div>
+        <button class="key danger wide" data-action="stop">■ Ferma la proiezione</button>
+      </section>
+
+      <div id="palco-empty" class="empty">
+        Niente in proiezione.<br>
+        <span class="muted">Vai in <b>Aperte</b>, tocca una presentazione e premi <b>F5 · Avvia</b>.</span>
       </div>
-      <div id="preview-hint" class="muted">Anteprima quando la presentazione è avviata.</div>
     </section>
 
     <div class="tabs">
-      <button class="tab active" data-tab="open">Aperte</button>
+      <button class="tab active" data-tab="palco">Palco</button>
+      <button class="tab" data-tab="open">Aperte</button>
       <button class="tab" data-tab="files">File</button>
       <button class="tab" data-tab="screen">Schermo</button>
     </div>
 
-    <section id="tab-open">
+    <section id="tab-open" class="hidden">
       <section class="card howto hidden" id="howto">
         <div class="howto-title">Come si usa</div>
         <ol class="howto-list">

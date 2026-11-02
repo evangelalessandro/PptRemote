@@ -5,3 +5,7 @@ __pycache__/
 .venv/
 venv/
 dist/
+server/web/_shot.html
+tools/shot1*.js
+tools/shot9.js
+tools/shot*.js

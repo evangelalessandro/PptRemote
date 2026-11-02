@@ -639,12 +639,27 @@ def name_from_title(title: str) -> str:
     return t.strip()
 
 
+def find_file_by_name(name: str) -> Path | None:
+    """Cerca un file per nome esatto nella cartella, senza limiti dell'indice veloce."""
+    key = (name or "").strip().lower()
+    if not key:
+        return None
+    cached = folder_index().get(key)
+    if cached is not None:
+        return cached
+    for path in _iter_presentations(folder_root(), limit=20000, budget=5.0):
+        if path.name.lower() == key:
+            FOLDER_CACHE["by_name"][key] = path
+            return path
+    return None
+
+
 def total_slides_for(hwnd: int) -> int:
     window = winapi.get_window(hwnd)
     if not window:
         return 0
     name = name_from_title(window["title"]).lower()
-    path = folder_index().get(name)
+    path = folder_index().get(name) or find_file_by_name(name)
     return count_slides(path) if path else 0
 
 
@@ -668,10 +683,12 @@ def slide_start(hwnd: int, total: int = 0, name: str = "") -> None:
 
 def slide_step(delta: int | None = None, absolute: int | None = None,
                total: int | None = None) -> None:
-    """Aggiorna il contatore delle presentazioni a schermo intero."""
+    """Aggiorna il contatore delle presentazioni a schermo intero (una volta per programma)."""
+    seen: set[int] = set()
     for window in presentation_windows():
-        if window["kind"] != "show":
+        if window["kind"] != "show" or window["pid"] in seen:
             continue
+        seen.add(window["pid"])
         with SLIDES_LOCK:
             info = SLIDES.get(window["pid"])
             if info is None:
@@ -702,9 +719,11 @@ def slide_forget(hwnd: int) -> None:
 
 
 def slide_last() -> None:
+    seen: set[int] = set()
     for window in presentation_windows():
-        if window["kind"] != "show":
+        if window["kind"] != "show" or window["pid"] in seen:
             continue
+        seen.add(window["pid"])
         with SLIDES_LOCK:
             info = SLIDES.setdefault(
                 window["pid"],

@@ -527,8 +527,8 @@ main {
 /* ---------- schede Aperte / File ---------- */
 .tabs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 13px;
@@ -539,15 +539,26 @@ main {
   background: transparent;
   color: var(--muted);
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 650;
-  padding: 9px 0;
+  padding: 9px 2px;
   border-radius: 10px;
   cursor: pointer;
 }
 .tab.active { background: var(--card-2); color: var(--fg); }
 
-#tab-open, #tab-files, #tab-screen { display: flex; flex-direction: column; gap: 10px; }
+#tab-palco, #tab-open, #tab-files, #tab-screen { display: flex; flex-direction: column; gap: 10px; }
+
+#tab-palco { flex: 1; }
+#tab-palco .stage { flex: 1; }
+#tab-palco .preview-wrap {
+  flex: 1;
+  min-height: 160px;
+  overflow: auto;
+}
+#tab-palco .preview { max-height: 58vh; object-fit: contain; margin: 0 auto; }
+.stage-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.key.wide { width: 100%; }
 
 .screen-tools {
   display: flex;
